@@ -1,0 +1,148 @@
+package main
+
+import (
+	"fmt"
+	"image"
+	"os"
+	"time"
+)
+
+type Address struct {
+	PostalCode    string `json:"postal_code,omitempty" validate:"required"`
+	City          string `json:"city,omitempty" validate:"required"`
+	Country       string `json:"country,omitempty" validate:"required"`
+	StreetAddress string `json:"street_address,omitempty"`
+}
+
+type CustomerContact struct {
+	Name        string   `json:"name" validate:"required"`
+	Email       string   `json:"email"`
+	PhoneNumber string   `json:"phone_number"`
+	Address     *Address `json:"address"`
+}
+
+type CompanyContact struct {
+	CompanyName        string   `json:"company_name" validate:"required"`
+	CompanyEmail       string   `json:"company_email" validate:"required"`
+	CompanyPhoneNumber string   `json:"company_phone_number" validate:"required"`
+	CompanyLogo        string   `json:"company_logo" validate:"required"`
+	CompanyAddress     *Address `json:"company_address" validate:"required"`
+}
+
+type DocumentData struct {
+	DocumentNumber string `json:"document_data"`
+	Date           string `json:"date"`
+	Note           string `json:"note"`
+}
+
+func ResizeImage(imagePath string) (float64, float64, error) {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		fmt.Println("Error opening image:", err)
+		return 0, 0, err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		fmt.Println("Error decoding image:", err)
+		return 0, 0, err
+	}
+
+	imgWidth := float64(img.Bounds().Dx())
+	imgHeight := float64(img.Bounds().Dy())
+
+	aspectRatio := imgWidth / imgHeight
+
+	var targetWidth, targetHeight float64
+	if MaximunImageWidth/aspectRatio <= MaximumImageHeight {
+		targetWidth = MaximunImageWidth
+		targetHeight = MaximunImageWidth / aspectRatio
+	} else {
+		targetWidth = MaximumImageHeight * aspectRatio
+		targetHeight = MaximumImageHeight
+	}
+
+	return targetWidth, targetHeight, nil
+}
+
+func structureAddress(a *Address) string {
+	var addrString string
+	if len(a.StreetAddress) > 0 {
+		addrString += fmt.Sprintf("%s\n", a.StreetAddress)
+	}
+
+	if len(a.PostalCode) > 0 {
+		addrString += fmt.Sprintf("P.O Box - %s\n", a.PostalCode)
+	}
+
+	if len(a.City) > 0 {
+		addrString += fmt.Sprintf("%s, %s\n", a.City, a.Country)
+	}
+
+	return addrString
+}
+
+func (c *CustomerContact) LayerCustomerContact(doc *Document) {
+	doc.pdf.SetFont("Arial", "", NormalTextFontSize)
+	_, lineHeight := doc.pdf.GetFontSize()
+	doc.pdf.Cell(40, lineHeight, c.Name)
+	if len(c.Email) > 0 {
+		doc.pdf.Ln(lineHeight + SmallGapY)
+		doc.pdf.Cell(40, lineHeight, c.Email)
+	}
+
+	if len(c.Address.City) > 0 {
+		doc.pdf.Ln(lineHeight + SmallGapY)
+		structuredAddress := structureAddress(c.Address)
+		fn := doc.pdf.UnicodeTranslatorFromDescriptor("")
+		doc.pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
+	}
+
+	if len(c.PhoneNumber) > 0 {
+		doc.pdf.Ln(lineHeight)
+		doc.pdf.SetFontStyle("I")
+		doc.pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.PhoneNumber))
+	}
+}
+
+func (c *CompanyContact) LayerCompanyContact(doc *Document) {
+	doc.pdf.SetFont("Arial", "", 12)
+	_, lineHeight := doc.pdf.GetFontSize()
+	doc.pdf.Cell(40, lineHeight, c.CompanyName)
+	if len(c.CompanyEmail) > 0 {
+		doc.pdf.Ln(lineHeight + SmallGapY)
+		doc.pdf.Cell(40, lineHeight, c.CompanyEmail)
+	}
+
+	if len(c.CompanyAddress.City) > 0 {
+		doc.pdf.Ln(lineHeight + SmallGapY)
+		structuredAddress := structureAddress(c.CompanyAddress)
+		fn := doc.pdf.UnicodeTranslatorFromDescriptor("")
+		doc.pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
+	}
+
+	if len(c.CompanyPhoneNumber) > 0 {
+		doc.pdf.Ln(lineHeight)
+		doc.pdf.SetFontStyle("I")
+		doc.pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.CompanyPhoneNumber))
+	}
+
+}
+
+func (d *DocumentData) LayerDocumentData(docType string, doc *Document) {
+	x := doc.pdf.GetX()
+	doc.pdf.SetFont("Arial", "", NormalTextFontSize)
+	_, lineHeight := doc.pdf.GetFontSize()
+	doc.pdf.SetFontStyle("B")
+	doc.pdf.Cell(42, lineHeight, docType+" NO: ")
+	doc.pdf.SetFontStyle("")
+	doc.pdf.Cell(40, lineHeight, d.DocumentNumber)
+	doc.pdf.Ln(lineHeight + GapY)
+
+	doc.pdf.SetX(x)
+	doc.pdf.SetFontStyle("B")
+	doc.pdf.Cell(42, lineHeight, docType+" DATE: ")
+	doc.pdf.SetFontStyle("")
+	doc.pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format("2006-01-02")))
+}
