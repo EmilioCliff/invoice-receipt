@@ -1,31 +1,36 @@
 package main
 
-func (doc *Document) SetHeaders(text string) *Document {
+func (doc *Document) SetHeaders(text string) {
 	doc.Header = text
-	return doc
+	return
 }
 
-func (doc *Document) SetFooter(text string) *Document {
+func (doc *Document) SetFooter(text string) {
 	doc.Footer = text
-	return doc
+	return
 }
 
-func (doc *Document) SetCompanyAddress(contact *CompanyContact) *Document {
+func (doc *Document) SetCompanyAddress(contact *CompanyContact) {
 	doc.CompanyContact = contact
-	return doc
+	return
 }
 
-func (doc *Document) SetCustomerAddress(contact *CustomerContact) *Document {
+func (doc *Document) SetCustomerAddress(contact *CustomerContact) {
 	doc.CustomerContact = contact
-	return doc
+	return
 }
 
-func (doc *Document) SetDocumentData(data *DocumentData) *Document {
+func (doc *Document) SetDocumentData(data *DocumentData) {
 	doc.DocumentData = data
-	return doc
+	return
 }
 
-func (doc *Document) AddItem(item *Item) *Document {
+func (doc *Document) AddItem(item *Item) {
 	doc.Items = append(doc.Items, item)
-	return doc
+	return
+}
+
+func (doc *Document) SetPaymentDetails(paymentDetails *PaymentDetails) {
+	doc.Payment = paymentDetails
+	return
 }

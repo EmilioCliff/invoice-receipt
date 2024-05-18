@@ -31,7 +31,6 @@ type CompanyContact struct {
 
 type DocumentData struct {
 	DocumentNumber string `json:"document_data"`
-	Date           string `json:"date"`
 	Note           string `json:"note"`
 }
 
@@ -130,19 +129,21 @@ func (c *CompanyContact) LayerCompanyContact(doc *Document) {
 
 }
 
-func (d *DocumentData) LayerDocumentData(docType string, doc *Document) {
+func (d *DocumentData) LayerDocumentData(docType string, doc *Document, formats map[string]interface{}) {
+	names := formats["names"].([]string)
+	formart := formats["formats"].(map[string]string)
 	x := doc.pdf.GetX()
 	doc.pdf.SetFont("Arial", "", NormalTextFontSize)
 	_, lineHeight := doc.pdf.GetFontSize()
-	doc.pdf.SetFontStyle("B")
-	doc.pdf.Cell(42, lineHeight, docType+" NO: ")
+	doc.pdf.SetFontStyle(formart["font_style"])
+	doc.pdf.Cell(42, lineHeight, names[0])
 	doc.pdf.SetFontStyle("")
 	doc.pdf.Cell(40, lineHeight, d.DocumentNumber)
-	doc.pdf.Ln(lineHeight + GapY)
+	doc.pdf.Ln(lineHeight + GapY + 2)
 
 	doc.pdf.SetX(x)
-	doc.pdf.SetFontStyle("B")
-	doc.pdf.Cell(42, lineHeight, docType+" DATE: ")
+	doc.pdf.SetFontStyle(formart["font_style"])
+	doc.pdf.Cell(42, lineHeight, names[1])
 	doc.pdf.SetFontStyle("")
-	doc.pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format("2006-01-02")))
+	doc.pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format(formart["date_format"])))
 }

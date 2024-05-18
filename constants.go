@@ -7,13 +7,13 @@ const (
 
 	CurrencyPrecision int8 = 2
 
-	MaximunImageWidth float64 = 40.0
+	MaximunImageWidth float64 = 50.0
 
-	MaximumImageHeight float64 = 40.0
+	MaximumImageHeight float64 = 50.0
 
 	MarginX float64 = 10.0
 
-	MarginY float64 = 20.0
+	MarginY float64 = 10.0
 
 	GapY float64 = 2.0
 

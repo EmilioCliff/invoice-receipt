@@ -10,8 +10,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New(1, &Options{
-		DocumentType: Invoice,
+	doc, err := New(2, &Options{
+		DocumentType: Receipt,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -19,11 +19,10 @@ func TestNew(t *testing.T) {
 	require.NoError(t, err)
 
 	doc.SetHeaders("My header")
-	doc.SetFooter("My footer")
+	doc.SetFooter("Your satisfaction is our best feeling")
 	doc.SetDocumentData(&DocumentData{
-		DocumentNumber: "2020",
-		Date:           "2023-10-09",
-		Note:           "My Note",
+		DocumentNumber: "20324334532342232",
+		// Note:           "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",
 	})
 
 	currentDir, err := os.Getwd()
@@ -53,7 +52,22 @@ func TestNew(t *testing.T) {
 		},
 	})
 
-	for i := 0; i < 30; i++ {
+	doc.SetPaymentDetails(&PaymentDetails{
+		Bank: &BankDetails{
+			BankName:      "KCB",
+			AccountName:   "Emilio Cliff Bank",
+			AccountNumber: "324235364565675",
+		},
+		Paybill: &PaybillDetails{
+			PaybillNumber: "3435346545645",
+			AccountNumber: "32434534645",
+		},
+		Till: &BuyGoodsDetails{
+			TillNumber: "35234534",
+		},
+	})
+
+	for i := 0; i < 3; i++ {
 		doc.AddItem(&Item{
 			Description: "Test Product 1",
 			Quantity:    10,

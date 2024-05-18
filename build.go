@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/EmilioCliff/templates"
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
 )
@@ -29,8 +30,8 @@ func New(templateIndex int8, options *Options) (*Document, error) {
 		Options:       options,
 	}
 
-	doc.AddTemplate(1, MysticAura)
-	doc.AddTemplate(2, CelestialDream)
+	doc.AddTemplate(1, templates.MysticAura)
+	doc.AddTemplate(2, templates.CelestialDream)
 
 	return doc, nil
 }

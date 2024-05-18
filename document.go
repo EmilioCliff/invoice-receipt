@@ -17,6 +17,7 @@ type Document struct {
 	Footer          string           `json:"footer"`
 	Options         *Options         `json:"options"`
 	Items           []*Item          `json:"items"`
+	Payment         *PaymentDetails  `json:"payment_details"`
 }
 
 type Options struct {
