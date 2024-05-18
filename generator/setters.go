@@ -1,4 +1,4 @@
-package main
+package generator
 
 func (doc *Document) SetHeaders(text string) {
 	doc.Header = text

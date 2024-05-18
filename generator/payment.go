@@ -1,4 +1,4 @@
-package main
+package generator
 
 type PaymentDetails struct {
 	Bank    *BankDetails     `json:"bank"`

@@ -1,18 +1,18 @@
-package main
+package generator
 
 import (
 	"github.com/go-pdf/fpdf"
 )
 
 type Document struct {
-	pdf           *fpdf.Fpdf
-	Type          string       `json:"type" validate:"required"`
-	TemplateIndex int8         `json:"template_index"`
-	Templates     []*Templates `json:"templates"`
+	Pdf          *fpdf.Fpdf   `json:"pdf"`
+	Type         string       `json:"type" validate:"required"`
+	TemplateName string       `json:"template_index"`
+	Templates    []*Templates `json:"templates"`
 
 	CustomerContact *CustomerContact `json:"cutomer_contact"`
 	CompanyContact  *CompanyContact  `json:"company_contact"`
-	DocumentData    *DocumentData    `json:"document_data"`
+	DocumentData    *DocumentData    `json:"document_data" validate:"required"`
 	Header          string           `json:"header"`
 	Footer          string           `json:"footer"`
 	Options         *Options         `json:"options"`

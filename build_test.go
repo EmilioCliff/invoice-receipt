@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github/EmilioCliff/invoice-receipt/generator"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,8 +11,8 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New(2, &Options{
-		DocumentType: Receipt,
+	doc, err := New("UnNamed", &generator.Options{
+		DocumentType: generator.Receipt,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -20,31 +21,33 @@ func TestNew(t *testing.T) {
 
 	doc.SetHeaders("My header")
 	doc.SetFooter("Your satisfaction is our best feeling")
-	doc.SetDocumentData(&DocumentData{
-		DocumentNumber: "20324334532342232",
-		// Note:           "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",
+	doc.SetDocumentData(&generator.DocumentData{
+		DocumentNumber:   "20324334532342232",
+		IssuedBy:         "Drew Feig",
+		IssuedByPosition: "Administrator",
+		Note:             "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",
 	})
 
 	currentDir, err := os.Getwd()
 	require.NoError(t, err)
 
-	doc.SetCompanyAddress(&CompanyContact{
+	doc.SetCompanyAddress(&generator.CompanyContact{
 		CompanyName:        "My Company Name",
 		CompanyEmail:       "company@gmail.com",
 		CompanyPhoneNumber: "07070707070",
 		CompanyLogo:        filepath.Join(currentDir, "logo.png"),
-		CompanyAddress: &Address{
+		CompanyAddress: &generator.Address{
 			PostalCode: "00200",
 			City:       "Nairobi",
 			Country:    "Kenya",
 		},
 	})
 
-	doc.SetCustomerAddress(&CustomerContact{
+	doc.SetCustomerAddress(&generator.CustomerContact{
 		Name:        "Emilio Cliff",
 		Email:       "emiliocliff@gmail.com",
 		PhoneNumber: "0707070707",
-		Address: &Address{
+		Address: &generator.Address{
 			PostalCode:    "00100",
 			City:          "Kitengela",
 			Country:       "Kenya",
@@ -52,23 +55,23 @@ func TestNew(t *testing.T) {
 		},
 	})
 
-	doc.SetPaymentDetails(&PaymentDetails{
-		Bank: &BankDetails{
+	doc.SetPaymentDetails(&generator.PaymentDetails{
+		Bank: &generator.BankDetails{
 			BankName:      "KCB",
 			AccountName:   "Emilio Cliff Bank",
 			AccountNumber: "324235364565675",
 		},
-		Paybill: &PaybillDetails{
+		Paybill: &generator.PaybillDetails{
 			PaybillNumber: "3435346545645",
 			AccountNumber: "32434534645",
 		},
-		Till: &BuyGoodsDetails{
+		Till: &generator.BuyGoodsDetails{
 			TillNumber: "35234534",
 		},
 	})
 
-	for i := 0; i < 3; i++ {
-		doc.AddItem(&Item{
+	for i := 0; i < 5; i++ {
+		doc.AddItem(&generator.Item{
 			Description: "Test Product 1",
 			Quantity:    10,
 			UnitPrice:   15.25,

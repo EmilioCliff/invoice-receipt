@@ -1,4 +1,4 @@
-package main
+package generator
 
 import (
 	"fmt"
@@ -30,8 +30,10 @@ type CompanyContact struct {
 }
 
 type DocumentData struct {
-	DocumentNumber string `json:"document_data"`
-	Note           string `json:"note"`
+	DocumentNumber   string `json:"document_data,omitempty"`
+	Note             string `json:"note,omitempty"`
+	IssuedBy         string `json:"issued_by,omitempty"`
+	IssuedByPosition string `json:"issued_by_position,omitempty"`
 }
 
 func ResizeImage(imagePath string) (float64, float64, error) {
@@ -83,48 +85,48 @@ func structureAddress(a *Address) string {
 }
 
 func (c *CustomerContact) LayerCustomerContact(doc *Document) {
-	doc.pdf.SetFont("Arial", "", NormalTextFontSize)
-	_, lineHeight := doc.pdf.GetFontSize()
-	doc.pdf.Cell(40, lineHeight, c.Name)
+	doc.Pdf.SetFont("Arial", "", NormalTextFontSize)
+	_, lineHeight := doc.Pdf.GetFontSize()
+	doc.Pdf.Cell(40, lineHeight, c.Name)
 	if len(c.Email) > 0 {
-		doc.pdf.Ln(lineHeight + SmallGapY)
-		doc.pdf.Cell(40, lineHeight, c.Email)
+		doc.Pdf.Ln(lineHeight + SmallGapY)
+		doc.Pdf.Cell(40, lineHeight, c.Email)
 	}
 
 	if len(c.Address.City) > 0 {
-		doc.pdf.Ln(lineHeight + SmallGapY)
+		doc.Pdf.Ln(lineHeight + SmallGapY)
 		structuredAddress := structureAddress(c.Address)
-		fn := doc.pdf.UnicodeTranslatorFromDescriptor("")
-		doc.pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
+		fn := doc.Pdf.UnicodeTranslatorFromDescriptor("")
+		doc.Pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
 	}
 
 	if len(c.PhoneNumber) > 0 {
-		doc.pdf.Ln(lineHeight)
-		doc.pdf.SetFontStyle("I")
-		doc.pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.PhoneNumber))
+		doc.Pdf.Ln(lineHeight)
+		doc.Pdf.SetFontStyle("I")
+		doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.PhoneNumber))
 	}
 }
 
 func (c *CompanyContact) LayerCompanyContact(doc *Document) {
-	doc.pdf.SetFont("Arial", "", 12)
-	_, lineHeight := doc.pdf.GetFontSize()
-	doc.pdf.Cell(40, lineHeight, c.CompanyName)
+	doc.Pdf.SetFont("Arial", "", 12)
+	_, lineHeight := doc.Pdf.GetFontSize()
+	doc.Pdf.Cell(40, lineHeight, c.CompanyName)
 	if len(c.CompanyEmail) > 0 {
-		doc.pdf.Ln(lineHeight + SmallGapY)
-		doc.pdf.Cell(40, lineHeight, c.CompanyEmail)
+		doc.Pdf.Ln(lineHeight + SmallGapY)
+		doc.Pdf.Cell(40, lineHeight, c.CompanyEmail)
 	}
 
 	if len(c.CompanyAddress.City) > 0 {
-		doc.pdf.Ln(lineHeight + SmallGapY)
+		doc.Pdf.Ln(lineHeight + SmallGapY)
 		structuredAddress := structureAddress(c.CompanyAddress)
-		fn := doc.pdf.UnicodeTranslatorFromDescriptor("")
-		doc.pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
+		fn := doc.Pdf.UnicodeTranslatorFromDescriptor("")
+		doc.Pdf.MultiCell(100, lineHeight+SmallGapY, fn(structuredAddress), "0", "", false)
 	}
 
 	if len(c.CompanyPhoneNumber) > 0 {
-		doc.pdf.Ln(lineHeight)
-		doc.pdf.SetFontStyle("I")
-		doc.pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.CompanyPhoneNumber))
+		doc.Pdf.Ln(lineHeight)
+		doc.Pdf.SetFontStyle("I")
+		doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", c.CompanyPhoneNumber))
 	}
 
 }
@@ -132,18 +134,18 @@ func (c *CompanyContact) LayerCompanyContact(doc *Document) {
 func (d *DocumentData) LayerDocumentData(docType string, doc *Document, formats map[string]interface{}) {
 	names := formats["names"].([]string)
 	formart := formats["formats"].(map[string]string)
-	x := doc.pdf.GetX()
-	doc.pdf.SetFont("Arial", "", NormalTextFontSize)
-	_, lineHeight := doc.pdf.GetFontSize()
-	doc.pdf.SetFontStyle(formart["font_style"])
-	doc.pdf.Cell(42, lineHeight, names[0])
-	doc.pdf.SetFontStyle("")
-	doc.pdf.Cell(40, lineHeight, d.DocumentNumber)
-	doc.pdf.Ln(lineHeight + GapY + 2)
+	x := doc.Pdf.GetX()
+	doc.Pdf.SetFont("Arial", "", NormalTextFontSize)
+	_, lineHeight := doc.Pdf.GetFontSize()
+	doc.Pdf.SetFontStyle(formart["font_style"])
+	doc.Pdf.Cell(42, lineHeight, names[0])
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(40, lineHeight, d.DocumentNumber)
+	doc.Pdf.Ln(lineHeight + GapY + 2)
 
-	doc.pdf.SetX(x)
-	doc.pdf.SetFontStyle(formart["font_style"])
-	doc.pdf.Cell(42, lineHeight, names[1])
-	doc.pdf.SetFontStyle("")
-	doc.pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format(formart["date_format"])))
+	doc.Pdf.SetX(x)
+	doc.Pdf.SetFontStyle(formart["font_style"])
+	doc.Pdf.Cell(42, lineHeight, names[1])
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format(formart["date_format"])))
 }

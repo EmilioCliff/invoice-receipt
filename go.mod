@@ -8,7 +8,6 @@ require (
 	github.com/creasty/defaults v1.7.0
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/image v0.16.0
 )
 
 require (
