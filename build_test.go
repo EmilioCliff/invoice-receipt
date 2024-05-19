@@ -11,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("UnNamed", &generator.Options{
+	doc, err := New("UnNamed1", &generator.Options{
 		DocumentType: generator.Receipt,
 	})
 	if err != nil {
@@ -37,9 +37,10 @@ func TestNew(t *testing.T) {
 		CompanyPhoneNumber: "07070707070",
 		CompanyLogo:        filepath.Join(currentDir, "logo.png"),
 		CompanyAddress: &generator.Address{
-			PostalCode: "00200",
-			City:       "Nairobi",
-			Country:    "Kenya",
+			PostalCode:    "00200",
+			City:          "Nairobi",
+			Country:       "Kenya",
+			StreetAddress: "BuildingName, buildingRoom, Road",
 		},
 	})
 
