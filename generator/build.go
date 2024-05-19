@@ -19,6 +19,9 @@ func (doc *Document) Build() ([]byte, error) {
 		return nil, err
 	}
 	err = template(doc)
+	if err != nil {
+		return nil, err
+	}
 
 	if doc.Options.Output == "pdf" {
 		if err := doc.Pdf.OutputFileAndClose(fmt.Sprintf("%s.pdf", doc.DocumentData.DocumentNumber)); err != nil {

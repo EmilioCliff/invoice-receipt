@@ -11,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("UnNamed1", &generator.Options{
+	doc, err := New("MysticAura", &generator.Options{
 		DocumentType: generator.Receipt,
 	})
 	if err != nil {
@@ -23,6 +23,8 @@ func TestNew(t *testing.T) {
 	doc.SetFooter("Your satisfaction is our best feeling")
 	doc.SetDocumentData(&generator.DocumentData{
 		DocumentNumber:   "20324334532342232",
+		Discount:         0,
+		Tax:              2,
 		IssuedBy:         "Drew Feig",
 		IssuedByPosition: "Administrator",
 		Note:             "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",
@@ -71,7 +73,7 @@ func TestNew(t *testing.T) {
 		},
 	})
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		doc.AddItem(&generator.Item{
 			Description: "Test Product 1",
 			Quantity:    10,

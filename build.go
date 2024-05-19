@@ -36,8 +36,8 @@ func New(templateName string, options *generator.Options) (*generator.Document, 
 
 	doc.AddTemplate("MysticAura", templates.MysticAura)
 	doc.AddTemplate("CelestialDream", templates.CelestialDream)
-	doc.AddTemplate("UnNamed", templates.UnNamed)
-	doc.AddTemplate("UnNamed1", templates.UnNamed1)
+	doc.AddTemplate("AzureEclipse", templates.AzureEclipse)
+	doc.AddTemplate("CrimsonWhisper", templates.CrimsonWhisper)
 
 	return doc, nil
 }

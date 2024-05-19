@@ -6,6 +6,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"strings"
+	"time"
 
 	"github.com/go-pdf/fpdf"
 )
@@ -18,6 +19,20 @@ func MysticAura(doc *generator.Document) error {
 			"border":     []string{"1", "1"},
 			"note":       true,
 			"payment":    false,
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"TOTAL": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+			},
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNumberTitle,
@@ -81,7 +96,27 @@ func MysticAura(doc *generator.Document) error {
 	doc.Pdf.Cell(40, 20, docType)
 	doc.Pdf.Ln(18)
 
-	doc.CompanyContact.LayerCompanyContact(doc)
+	doc.Pdf.SetFont("Arial", "", 12)
+	_, lineHeight := doc.Pdf.GetFontSize()
+	doc.Pdf.Cell(40, lineHeight, doc.CompanyContact.CompanyName)
+	if len(doc.CompanyContact.CompanyEmail) > 0 {
+		doc.Pdf.Ln(lineHeight + generator.SmallGapY)
+		doc.Pdf.Cell(40, lineHeight, doc.CompanyContact.CompanyEmail)
+	}
+
+	doc.Pdf.Ln(lineHeight + generator.SmallGapY)
+	if len(doc.CompanyContact.CompanyAddress.StreetAddress) > 0 {
+		doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s", doc.CompanyContact.CompanyAddress.StreetAddress))
+	}
+	doc.Pdf.Ln(lineHeight + generator.SmallGapY)
+	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s %s, %s", doc.CompanyContact.CompanyAddress.PostalCode, doc.CompanyContact.CompanyAddress.City, doc.CompanyContact.CompanyAddress.Country))
+
+	if len(doc.CompanyContact.CompanyPhoneNumber) > 0 {
+		doc.Pdf.Ln(lineHeight)
+		doc.Pdf.SetFontStyle("I")
+		doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", doc.CompanyContact.CompanyPhoneNumber))
+	}
+
 	doc.Pdf.Ln(10)
 
 	headerY := doc.Pdf.GetY()
@@ -91,7 +126,23 @@ func MysticAura(doc *generator.Document) error {
 	doc.Pdf.Cell(40, 20, docType+" TO")
 	doc.Pdf.Ln(18)
 
-	doc.CustomerContact.LayerCustomerContact(doc)
+	doc.Pdf.SetFont("Arial", "", generator.NormalTextFontSize)
+	_, lineHeight = doc.Pdf.GetFontSize()
+	doc.Pdf.Cell(40, lineHeight, doc.CustomerContact.Name)
+	if len(doc.CustomerContact.Email) > 0 {
+		doc.Pdf.Ln(lineHeight + generator.SmallGapY)
+		doc.Pdf.Cell(40, lineHeight, doc.CustomerContact.Email)
+	}
+
+	doc.Pdf.Ln(lineHeight + generator.SmallGapY)
+	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s %s, %s", doc.CustomerContact.Address.PostalCode, doc.CustomerContact.Address.City, doc.CustomerContact.Address.Country))
+
+	if len(doc.CustomerContact.PhoneNumber) > 0 {
+		doc.Pdf.Ln(lineHeight)
+		doc.Pdf.SetFontStyle("I")
+		doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", doc.CustomerContact.PhoneNumber))
+	}
+
 	tableY := doc.Pdf.GetY()
 
 	middleX := (safeAreaW / 2) + 15
@@ -101,19 +152,26 @@ func MysticAura(doc *generator.Document) error {
 	doc.Pdf.Ln(18)
 	doc.Pdf.SetX(middleX)
 
-	documentDataStructure := map[string]interface{}{
-		"names": []string{fmt.Sprintf("%v NO: ", docType), fmt.Sprintf("%v DATE: ", docType)},
-		"formats": map[string]string{
-			"date_format": "2006-01-02",
-			"alignment":   "",
-			"font_style":  "B",
-		},
-	}
+	x := doc.Pdf.GetX()
+	doc.Pdf.SetFont("Arial", "", generator.NormalTextFontSize)
+	_, lineHeight = doc.Pdf.GetFontSize()
+	doc.Pdf.SetFontStyle("B")
+	doc.Pdf.Cell(42, lineHeight, fmt.Sprintf("%v NO: ", docType))
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(40, lineHeight, doc.DocumentData.DocumentNumber)
+	doc.Pdf.Ln(lineHeight + generator.GapY + 2)
 
-	doc.DocumentData.LayerDocumentData(docType, doc, documentDataStructure)
+	doc.Pdf.SetX(x)
+	doc.Pdf.SetFontStyle("B")
+	doc.Pdf.Cell(42, lineHeight, fmt.Sprintf("%v DATE: ", docType))
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format("2006-01-02")))
 
 	doc.Pdf.SetXY(generator.MarginX, tableY+10)
 	doc.SetTableHeadings(descriptionData)
-	doc.AddItemToTable(descriptionData)
+	err = doc.AddItemToTable(descriptionData)
+	if err != nil {
+		return err
+	}
 	return nil
 }

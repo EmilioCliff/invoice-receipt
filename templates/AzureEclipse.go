@@ -9,7 +9,7 @@ import (
 	"github.com/go-pdf/fpdf"
 )
 
-func UnNamed(doc *generator.Document) error {
+func AzureEclipse(doc *generator.Document) error {
 	if doc.Payment == nil {
 		return fmt.Errorf("template requires payment methods")
 	}
@@ -22,7 +22,7 @@ func UnNamed(doc *generator.Document) error {
 
 	doc.Pdf.AddPage()
 
-	doc.Pdf.SetFillColor(200, 200, 200)
+	doc.Pdf.SetFillColor(80, 80, 80)
 	doc.Pdf.Rect(0, generator.MarginY, generator.MarginX-2, generator.ExtraLargeTextFontSize+3, "F")
 	doc.Pdf.Rect(193, generator.MarginY, 15, generator.ExtraLargeTextFontSize+3, "F")
 	doc.Pdf.SetFillColor(255, 255, 255)
@@ -105,11 +105,31 @@ func UnNamed(doc *generator.Document) error {
 
 	descriptionData := map[int]map[string]interface{}{
 		0: {
-			"fillHeader": []interface{}{true, 200, 200, 200},
+			"fillHeader": []interface{}{true, 80, 80, 80},
 			"fillRow":    []interface{}{true, 255, 255, 255},
 			"border":     []string{"1", "1"},
 			"note":       false,
 			"payment":    true,
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"Discount": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"TOTAL": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "80,80,80"},
+				},
+			},
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNameDescriptionTitle,
@@ -134,7 +154,10 @@ func UnNamed(doc *generator.Document) error {
 	}
 
 	doc.SetTableHeadings(descriptionData)
-	doc.AddItemToTable(descriptionData)
+	err := doc.AddItemToTable(descriptionData)
+	if err != nil {
+		return err
+	}
 
 	doc.Pdf.SetY(-45)
 	y := doc.Pdf.GetY()

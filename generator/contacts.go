@@ -30,10 +30,12 @@ type CompanyContact struct {
 }
 
 type DocumentData struct {
-	DocumentNumber   string `json:"document_data,omitempty"`
-	Note             string `json:"note,omitempty"`
-	IssuedBy         string `json:"issued_by,omitempty"`
-	IssuedByPosition string `json:"issued_by_position,omitempty"`
+	DocumentNumber   string  `json:"document_data,omitempty"`
+	Note             string  `json:"note,omitempty"`
+	IssuedBy         string  `json:"issued_by,omitempty"`
+	IssuedByPosition string  `json:"issued_by_position,omitempty"`
+	Tax              float64 `json:"tax"`
+	Discount         float64 `json:"discount"`
 }
 
 func ResizeImage(imagePath string) (float64, float64, error) {

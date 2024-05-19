@@ -77,8 +77,28 @@ func CelestialDream(doc *generator.Document) error {
 			"fillHeader": []interface{}{true, 255, 255, 255},
 			"fillRow":    []interface{}{true, 255, 255, 255},
 			"border":     []string{"TB", "TB"},
-			"note":       true,
-			"payment":    false,
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"T", "T"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"Tax": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"B", "B"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"Total": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"T", "T"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+			},
+			"note":    true,
+			"payment": false,
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNameDescriptionTitle,
@@ -103,7 +123,10 @@ func CelestialDream(doc *generator.Document) error {
 	}
 
 	doc.SetTableHeadings(descriptionData)
-	doc.AddItemToTable(descriptionData)
+	err = doc.AddItemToTable(descriptionData)
+	if err != nil {
+		return err
+	}
 
 	doc.Pdf.Ln(20)
 	doc.Pdf.SetFont("Times", "", generator.LargeTextFontSize)

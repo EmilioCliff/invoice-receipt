@@ -1,6 +1,10 @@
 package generator
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type Item struct {
 	Description string  `json:"description"`
@@ -30,12 +34,14 @@ func (doc *Document) SetTableHeadings(columnsDescriptions map[int]map[string]int
 	doc.Pdf.Ln(-1)
 }
 
-func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]interface{}) {
+func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]interface{}) error {
 	metaData := columnsDescriptions[0]
 	fill := metaData["fillRow"].([]interface{})
 	border := metaData["border"].([]string)
 	note := metaData["note"].(bool)
 	payment := metaData["payment"].(bool)
+	calculations := metaData["calculations"].(map[string]map[string][]string)
+
 	if fill[0] == true {
 		r := fill[1].(int)
 		g := fill[2].(int)
@@ -106,26 +112,192 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 		leftIndent += columnsDescriptions[1]["width"].(float64) + columnsDescriptions[2]["width"].(float64)
 	}
 
-	doc.Pdf.SetXY(MarginX+leftIndent, y)
-	if len(columnsDescriptions) > 5 {
-		doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, "Subtotal", border[1], 0, columnsDescriptions[4]["alignment"].([]string)[1], true, 0, "")
-		doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", subtotal), border[1], 0, columnsDescriptions[5]["alignment"].([]string)[1], true, 0, "")
-	} else {
-		doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, "Subtotal", border[1], 0, columnsDescriptions[3]["alignment"].([]string)[1], true, 0, "")
-		doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", subtotal), border[1], 0, columnsDescriptions[4]["alignment"].([]string)[1], true, 0, "")
-	}
-	doc.Pdf.Ln(-1)
+	grandTotal := 0.0
+	for key := range calculations {
+		alignment := calculations[key]["alignment"]
+		margin := calculations[key]["margin"]
+		style := calculations[key]["style"]
+		fillOne := strings.Split(calculations[key]["fill"][0], ",")
+		fillTwo := strings.Split(calculations[key]["fill"][1], ",")
+		var r, g, b int
 
-	grandTotal := subtotal
-	doc.Pdf.SetX(MarginX + leftIndent)
-	if len(columnsDescriptions) > 5 {
-		doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, "Grand total", border[1], 0, columnsDescriptions[4]["alignment"].([]string)[1], true, 0, "")
-		doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", grandTotal), border[1], 0, columnsDescriptions[5]["alignment"].([]string)[1], true, 0, "")
-	} else {
-		doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, "Grand total", border[1], 0, columnsDescriptions[3]["alignment"].([]string)[1], true, 0, "")
-		doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", grandTotal), border[1], 0, "CM", true, 0, "")
-	}
-	doc.Pdf.Ln(-1)
+		if strings.ToLower(key) == "subtotal" {
+			doc.Pdf.SetXY(MarginX+leftIndent, y)
+			if len(columnsDescriptions) > 5 {
+				doc.Pdf.SetFontStyle(style[0])
 
-	return
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, key, margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", subtotal), margin[1], 0, alignment[1], true, 0, "")
+			} else {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, key, margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", subtotal), margin[1], 0, alignment[1], true, 0, "")
+			}
+			doc.Pdf.Ln(-1)
+			grandTotal = subtotal
+			continue
+		}
+
+		// It can either be tax or discount. Now here we change the value of the grandTotal if either is correct
+		if strings.ToLower(key) == "tax" {
+			tax := 0.0
+			if doc.DocumentData.Tax != 0.0 {
+				tax = subtotal * (doc.DocumentData.Tax / 100)
+				grandTotal = subtotal + tax
+			}
+
+			doc.Pdf.SetX(MarginX + leftIndent)
+			if len(columnsDescriptions) > 5 {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%v (%.2f%s)", key, doc.DocumentData.Tax, "%"), margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", tax), margin[1], 0, alignment[1], true, 0, "")
+			} else {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%v (%.2f%s)", key, doc.DocumentData.Tax, "%"), margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", tax), margin[1], 0, alignment[1], true, 0, "")
+			}
+			doc.Pdf.Ln(-1)
+			continue
+
+		} else if strings.ToLower(key) == "discount" {
+			discount := 0.0
+			if doc.DocumentData.Discount != 0.0 {
+				discount = subtotal * (doc.DocumentData.Discount / 100)
+				grandTotal = subtotal - discount
+			}
+
+			doc.Pdf.SetX(MarginX + leftIndent)
+			if len(columnsDescriptions) > 5 {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%v (%.2f%s)", key, doc.DocumentData.Discount, "%"), margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", discount), margin[1], 0, alignment[1], true, 0, "")
+			} else {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%v (%.2f%s)", key, doc.DocumentData.Discount, "%"), margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", discount), margin[1], 0, alignment[1], true, 0, "")
+			}
+			doc.Pdf.Ln(-1)
+			continue
+		}
+
+		if strings.ToLower(key) == "total" {
+			doc.Pdf.SetX(MarginX + leftIndent)
+			if len(columnsDescriptions) > 5 {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, key, margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[5]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", grandTotal), margin[1], 0, alignment[1], true, 0, "")
+			} else {
+				doc.Pdf.SetFontStyle(style[0])
+
+				r, _ = strconv.Atoi(fillOne[0])
+				g, _ = strconv.Atoi(fillOne[0])
+				b, _ = strconv.Atoi(fillOne[0])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[3]["width"].(float64), TableCellLineHeight, key, margin[0], 0, alignment[0], true, 0, "")
+				doc.Pdf.SetFontStyle(style[1])
+
+				r, _ = strconv.Atoi(fillTwo[1])
+				g, _ = strconv.Atoi(fillTwo[1])
+				b, _ = strconv.Atoi(fillTwo[1])
+				doc.Pdf.SetFillColor(r, g, b)
+
+				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", grandTotal), margin[1], 0, alignment[1], true, 0, "")
+			}
+			doc.Pdf.Ln(-1)
+			continue
+		}
+	}
+
+	return nil
 }

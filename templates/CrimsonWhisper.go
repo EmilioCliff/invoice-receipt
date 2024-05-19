@@ -9,7 +9,7 @@ import (
 	"github.com/go-pdf/fpdf"
 )
 
-func UnNamed1(doc *generator.Document) error {
+func CrimsonWhisper(doc *generator.Document) error {
 	if doc.Payment == nil {
 		return fmt.Errorf("template requires payment methods")
 	}
@@ -48,19 +48,23 @@ func UnNamed1(doc *generator.Document) error {
 	doc.Pdf.Cell(55, generator.CellLineHeight, fmt.Sprintf("%s %s", doc.CustomerContact.Address.PostalCode, doc.CustomerContact.Address.City))
 	doc.Pdf.Ln(5)
 	doc.Pdf.Cell(55, generator.CellLineHeight, doc.CustomerContact.Address.Country)
-	// Add Bill to info
 
 	doc.Pdf.SetXY(generator.MarginX+50, y)
 	doc.Pdf.SetFontStyle("B")
 	doc.Pdf.Cell(55, generator.CellLineHeight, "Ship To")
-	doc.Pdf.SetFontStyle("")
 	doc.Pdf.Ln(8)
+	doc.Pdf.SetX(generator.MarginX + 50)
+	doc.Pdf.SetFontStyle("")
 	doc.Pdf.Cell(55, generator.CellLineHeight, doc.CustomerContact.Name)
 	doc.Pdf.Ln(5)
-	doc.Pdf.Cell(55, generator.CellLineHeight, fmt.Sprintf("%s %s", doc.CustomerContact.Address.PostalCode, doc.CustomerContact.Address.City))
+	doc.Pdf.SetX(generator.MarginX + 50)
+	addres := strings.Split(doc.CustomerContact.Address.StreetAddress, ",")
+	// doc.Pdf.Cell(55, generator.CellLineHeight, fmt.Sprintf("%s %s", doc.CustomerContact.Address.PostalCode, doc.CustomerContact.Address.City))
+	doc.Pdf.Cell(55, generator.CellLineHeight, fmt.Sprintf("%s %s", addres[0], addres[1]))
 	doc.Pdf.Ln(5)
-	doc.Pdf.Cell(55, generator.CellLineHeight, doc.CustomerContact.Address.Country)
-	// Add ship to info
+	doc.Pdf.SetX(generator.MarginX + 50)
+	// doc.Pdf.Cell(55, generator.CellLineHeight, doc.CustomerContact.Address.Country)
+	doc.Pdf.Cell(55, generator.CellLineHeight, addres[2])
 
 	doc.Pdf.SetXY(generator.MarginX+110, y)
 	doc.Pdf.SetFontStyle("B")
@@ -88,6 +92,69 @@ func UnNamed1(doc *generator.Document) error {
 	doc.Pdf.Cell(30, generator.CellLineHeight, "Due Date")
 	doc.Pdf.SetFontStyle("")
 	doc.Pdf.CellFormat(50, generator.CellLineHeight, "03/05/2023", "0", 0, "RM", false, 0, "") // Add Due Date Day
+
+	doc.Pdf.Ln(20)
+
+	descriptionData := map[int]map[string]interface{}{
+		0: {
+			"fillHeader": []interface{}{true, 100, 100, 100},
+			"fillRow":    []interface{}{true, 255, 255, 255},
+			"border":     []string{"1", "1"},
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"RM", "RM"},
+					"margin":    []string{"T", "LRT"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"Tax": {
+					"alignment": []string{"RM", "RM"},
+					"margin":    []string{"0", "LR"},
+					"style":     []string{"B", ""},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+				"TOTAL": {
+					"alignment": []string{"RM", "RM"},
+					"margin":    []string{"0", "1"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "100,100,100"},
+				},
+			},
+			"note":    false,
+			"payment": false,
+		},
+		1: {
+			"columnName": doc.Options.TextItemsNumberTitle,
+			"width":      10.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		2: {
+			"columnName": doc.Options.TextItemsNameDescriptionTitle,
+			"width":      75.0,
+			"alignment":  []string{"CM", "LM"},
+		},
+		3: {
+			"columnName": doc.Options.TextItemsQuantityTitle,
+			"width":      25.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		4: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsUnitCostTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "RM"},
+		},
+		5: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsTotalTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "RM"},
+		},
+	}
+
+	doc.SetTableHeadings(descriptionData)
+	err := doc.AddItemToTable(descriptionData)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
