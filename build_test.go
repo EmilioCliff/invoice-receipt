@@ -11,8 +11,9 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("MysticAura", &generator.Options{
-		DocumentType: generator.Receipt,
+	doc, err := New("UnNamed", &generator.Options{
+		DocumentType:   generator.Invoice,
+		CurrencySymbol: "KES",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -24,6 +25,8 @@ func TestNew(t *testing.T) {
 	doc.SetDocumentData(&generator.DocumentData{
 		DocumentNumber:   "20324334532342232",
 		Discount:         0,
+		DueDate:          15,
+		TermNConditions:  "Payment is due within 15 days",
 		Tax:              2,
 		IssuedBy:         "Drew Feig",
 		IssuedByPosition: "Administrator",
@@ -61,7 +64,7 @@ func TestNew(t *testing.T) {
 	doc.SetPaymentDetails(&generator.PaymentDetails{
 		Bank: &generator.BankDetails{
 			BankName:      "KCB",
-			AccountName:   "Emilio Cliff Bank",
+			AccountName:   "Emilio Cliff Bank Of Kenya",
 			AccountNumber: "324235364565675",
 		},
 		Paybill: &generator.PaybillDetails{
@@ -73,7 +76,7 @@ func TestNew(t *testing.T) {
 		},
 	})
 
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 3; i++ {
 		doc.AddItem(&generator.Item{
 			Description: "Test Product 1",
 			Quantity:    10,

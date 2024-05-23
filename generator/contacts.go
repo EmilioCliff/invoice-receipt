@@ -36,6 +36,8 @@ type DocumentData struct {
 	IssuedByPosition string  `json:"issued_by_position,omitempty"`
 	Tax              float64 `json:"tax"`
 	Discount         float64 `json:"discount"`
+	DueDate          int8    `json:"due_date"`
+	TermNConditions  string  `json:"terms_n_conditions"`
 }
 
 func ResizeImage(imagePath string) (float64, float64, error) {

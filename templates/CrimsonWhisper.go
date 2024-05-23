@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"github/EmilioCliff/invoice-receipt/generator"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -18,7 +20,15 @@ func CrimsonWhisper(doc *generator.Document) error {
 
 	docType := strings.ToUpper(doc.Type)
 
-	doc.Pdf.SetAutoPageBreak(true, 20)
+	doc.Pdf.SetAutoPageBreak(true, 10)
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Failed to get current dir: %w", err)
+	}
+
+	doc.Pdf.SetFontLocation(filepath.Join(currentDir, "fonts"))
+	doc.Pdf.AddFont("Pacifico", "", "Pacifico-Regular.json")
 
 	doc.Pdf.AddPage()
 
@@ -151,9 +161,59 @@ func CrimsonWhisper(doc *generator.Document) error {
 	}
 
 	doc.SetTableHeadings(descriptionData)
-	err := doc.AddItemToTable(descriptionData)
+	err = doc.AddItemToTable(descriptionData)
 	if err != nil {
 		return err
+	}
+
+	doc.Pdf.SetFont("Pacifico", "", generator.LargeTextFontSize)
+	doc.Pdf.Ln(5)
+	wd = doc.Pdf.GetStringWidth(doc.CustomerContact.Name)
+	doc.Pdf.SetX(-(wd + generator.MarginX))
+	doc.Pdf.Cell(wd, generator.ExtraLargeTextFontSize, doc.CustomerContact.Name)
+
+	doc.Pdf.SetXY(generator.MarginX, -50.0)
+	doc.Pdf.SetFont("Arial", "B", generator.NormalTextFontSize)
+	doc.Pdf.Cell(50, generator.CellLineHeight, "Terms & Conditions")
+	doc.Pdf.Ln(5)
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(50, generator.CellLineHeight, doc.DocumentData.TermNConditions)
+	doc.Pdf.Ln(10)
+	if doc.DocumentData.Note != "" {
+		doc.Pdf.SetFontSize(generator.SmallTextFontSize)
+		doc.Pdf.MultiCell(80, 4, doc.DocumentData.Note, "0", "LT", false)
+	}
+
+	doc.Pdf.SetFont("Times", "B", generator.NormalTextFontSize)
+	wd = doc.Pdf.GetStringWidth("PAYMENT METHOD :")
+	doc.Pdf.SetXY(-(wd + generator.MarginX), -50)
+	doc.Pdf.CellFormat(wd, generator.CellLineHeight, "PAYMENT Method :", "0", 0, "RM", false, 0, "")
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Ln(5)
+	if doc.Payment.Bank != nil {
+		wd = doc.Pdf.GetStringWidth(doc.Payment.Bank.BankName)
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, doc.Payment.Bank.BankName, "0", 0, "RM", false, 0, "")
+		doc.Pdf.Ln(5)
+		wd = doc.Pdf.GetStringWidth(fmt.Sprintf("Account Name: %s", doc.Payment.Bank.AccountName))
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("Account Name: %s", doc.Payment.Bank.AccountName), "0", 0, "RM", false, 0, "")
+		doc.Pdf.Ln(5)
+		wd = doc.Pdf.GetStringWidth(fmt.Sprintf("Account Number: %s", doc.Payment.Bank.AccountNumber))
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("Account Number: %s", doc.Payment.Bank.AccountNumber), "0", 0, "RM", false, 0, "")
+	} else if doc.Payment.Paybill != nil {
+		wd = doc.Pdf.GetStringWidth(fmt.Sprintf("Paybill Number: %s", doc.Payment.Paybill.PaybillNumber))
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("Paybill Number: %s", doc.Payment.Paybill.PaybillNumber), "0", 0, "RM", false, 0, "")
+		doc.Pdf.Ln(5)
+		wd = doc.Pdf.GetStringWidth(fmt.Sprintf("Account Number: %s", doc.Payment.Paybill.AccountNumber))
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("Account Number: %s", doc.Payment.Paybill.AccountNumber), "0", 0, "RM", false, 0, "")
+	} else if doc.Payment.Till != nil {
+		wd = doc.Pdf.GetStringWidth(fmt.Sprintf("Till Number: %s", doc.Payment.Till.TillNumber))
+		doc.Pdf.SetX(-(wd + generator.MarginX))
+		doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("Till Number: %s", doc.Payment.Till.TillNumber), "0", 0, "RM", false, 0, "")
 	}
 
 	return nil
