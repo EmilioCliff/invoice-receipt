@@ -11,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("UnNamed", &generator.Options{
+	doc, err := New("AzureEclipse", &generator.Options{
 		DocumentType:   generator.Invoice,
 		CurrencySymbol: "KES",
 	})

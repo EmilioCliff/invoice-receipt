@@ -34,10 +34,6 @@ func UnNamed(doc *generator.Document) error {
 		return err
 	}
 
-	// doc.Pdf.SetXY(generator.MarginX, generator.MarginY+10)
-	// doc.Pdf.SetFont("Pacifico", "", generator.LargeTextFontSize)
-	// doc.Pdf.Cell(50, generator.CellLineHeight, doc.CompanyContact.CompanyName)
-
 	doc.Pdf.ImageOptions(doc.CompanyContact.CompanyLogo, generator.MarginX, generator.MarginY, targetWidth, targetHeight, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
 	doc.Pdf.Ln(50)
@@ -121,25 +117,25 @@ func UnNamed(doc *generator.Document) error {
 			"calculations": map[string]map[string][]string{
 				"Subtotal": {
 					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"T", "LRT"},
+					"margin":    []string{"B", "B"},
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
 				"Tax": {
 					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"0", "LR"},
+					"margin":    []string{"B", "B"},
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
 				"TOTAL": {
 					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"0", "1"},
+					"margin":    []string{"B", "B"},
 					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "100,100,100"},
+					"fill":      []string{"255,255,255", "255,255,255"},
 				},
 			},
 			"note":    false,
-			"payment": false,
+			"payment": true,
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNumberTitle,
@@ -170,6 +166,25 @@ func UnNamed(doc *generator.Document) error {
 
 	doc.SetTableHeadings(descriptionData)
 	doc.AddItemToTable(descriptionData)
+
+	doc.Pdf.SetY(-45)
+	y = doc.Pdf.GetY()
+
+	doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
+	doc.Pdf.Cell(100, generator.CellLineHeight, "Thank you for purchase!")
+
+	doc.Pdf.SetFontSize(generator.NormalTextFontSize)
+	doc.Pdf.SetX(130)
+	doc.Pdf.SetFont("Pacifico", "", generator.LargeTextFontSize)
+	doc.Pdf.CellFormat(70, generator.CellLineHeight, doc.DocumentData.IssuedBy, "0", 0, "CM", false, 0, "")
+	doc.Pdf.Ln(10)
+	y = doc.Pdf.GetY()
+
+	doc.Pdf.Line(130, y, 200, y)
+	doc.Pdf.Ln(3)
+	doc.Pdf.SetX(130)
+	doc.Pdf.SetFont("Arial", "", generator.SmallTextFontSize)
+	doc.Pdf.CellFormat(70, generator.CellLineHeight, doc.DocumentData.IssuedByPosition, "0", 0, "CM", false, 0, "")
 
 	return nil
 }
