@@ -121,7 +121,7 @@ func UnNamed(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Tax": {
+				"Discount": {
 					"alignment": []string{"RM", "RM"},
 					"margin":    []string{"B", "B"},
 					"style":     []string{"B", ""},

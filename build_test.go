@@ -11,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("AzureEclipse", &generator.Options{
+	doc, err := New("UnNamed2", &generator.Options{
 		DocumentType:   generator.Invoice,
 		CurrencySymbol: "KES",
 	})
@@ -24,10 +24,10 @@ func TestNew(t *testing.T) {
 	doc.SetFooter("Your satisfaction is our best feeling")
 	doc.SetDocumentData(&generator.DocumentData{
 		DocumentNumber:   "20324334532342232",
-		Discount:         0,
+		Discount:         10,
 		DueDate:          15,
 		TermNConditions:  "Payment is due within 15 days",
-		Tax:              2,
+		Tax:              17,
 		IssuedBy:         "Drew Feig",
 		IssuedByPosition: "Administrator",
 		Note:             "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",

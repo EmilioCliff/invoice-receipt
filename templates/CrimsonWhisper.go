@@ -117,7 +117,7 @@ func CrimsonWhisper(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Tax": {
+				"Discount": {
 					"alignment": []string{"RM", "RM"},
 					"margin":    []string{"0", "LR"},
 					"style":     []string{"B", ""},
@@ -131,7 +131,7 @@ func CrimsonWhisper(doc *generator.Document) error {
 				},
 			},
 			"note":    false,
-			"payment": false,
+			"payment": true,
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNumberTitle,
