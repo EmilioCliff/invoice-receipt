@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -24,7 +25,7 @@ func (doc *Document) Build() ([]byte, error) {
 	}
 
 	if doc.Options.Output == "pdf" {
-		if err := doc.Pdf.OutputFileAndClose(fmt.Sprintf("%s.pdf", doc.DocumentData.DocumentNumber)); err != nil {
+		if err := doc.Pdf.OutputFileAndClose(fmt.Sprintf("%s-%s.pdf", strings.ToUpper(doc.Type), doc.DocumentData.DocumentNumber)); err != nil {
 			return nil, err
 		}
 	} else {

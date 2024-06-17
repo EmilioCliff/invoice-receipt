@@ -84,18 +84,6 @@ func CelestialDream(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Tax": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"B", "B"},
-					"style":     []string{"B", ""},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-				"Total": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"T", "T"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
 			},
 			"note":    true,
 			"payment": false,
@@ -120,6 +108,31 @@ func CelestialDream(doc *generator.Document) error {
 			"width":      35.0,
 			"alignment":  []string{"CM", "CM"},
 		},
+	}
+
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"0", "0"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"RM", "CM"},
+			"margin":    {"B", "B"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"CM", "CM"},
+		"margin":    {"T", "T"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "255,255,255"},
 	}
 
 	doc.SetTableHeadings(descriptionData)

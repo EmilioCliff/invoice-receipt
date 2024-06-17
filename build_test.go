@@ -12,7 +12,7 @@ import (
 
 func TestNew(t *testing.T) {
 	doc, err := New("UnNamed2", &generator.Options{
-		DocumentType:   generator.Invoice,
+		DocumentType:   generator.Receipt,
 		CurrencySymbol: "KES",
 	})
 	if err != nil {
@@ -24,10 +24,10 @@ func TestNew(t *testing.T) {
 	doc.SetFooter("Your satisfaction is our best feeling")
 	doc.SetDocumentData(&generator.DocumentData{
 		DocumentNumber:   "20324334532342232",
-		Discount:         10,
+		Discount:         12.5,
 		DueDate:          15,
 		TermNConditions:  "Payment is due within 15 days",
-		Tax:              17,
+		Tax:              15,
 		IssuedBy:         "Drew Feig",
 		IssuedByPosition: "Administrator",
 		Note:             "This is toscascaskcnsjkcnsdjkbd bjkdb sjb sdbsbvj bj jsd jhsd sd be payed before a certain date",
@@ -76,7 +76,7 @@ func TestNew(t *testing.T) {
 		},
 	})
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		doc.AddItem(&generator.Item{
 			Description: "Test Product 1",
 			Quantity:    10,

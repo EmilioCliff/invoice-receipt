@@ -117,21 +117,9 @@ func CrimsonWhisper(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Discount": {
-					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"0", "LR"},
-					"style":     []string{"B", ""},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-				"TOTAL": {
-					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"0", "1"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "100,100,100"},
-				},
 			},
-			"note":    false,
-			"payment": true,
+			"note":    true,
+			"payment": false,
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNumberTitle,
@@ -160,6 +148,31 @@ func CrimsonWhisper(doc *generator.Document) error {
 		},
 	}
 
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"RM", "RM"},
+			"margin":    {"0", "LR"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"RM", "RM"},
+			"margin":    {"0", "LR"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"RM", "RM"},
+		"margin":    {"0", "1"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "100,100,100"},
+	}
+
 	doc.SetTableHeadings(descriptionData)
 	err = doc.AddItemToTable(descriptionData)
 	if err != nil {
@@ -167,7 +180,7 @@ func CrimsonWhisper(doc *generator.Document) error {
 	}
 
 	doc.Pdf.SetFont("Pacifico", "", generator.LargeTextFontSize)
-	doc.Pdf.Ln(5)
+	doc.Pdf.Ln(8)
 	wd = doc.Pdf.GetStringWidth(doc.CustomerContact.Name)
 	doc.Pdf.SetX(-(wd + generator.MarginX))
 	doc.Pdf.Cell(wd, generator.ExtraLargeTextFontSize, doc.CustomerContact.Name)

@@ -17,16 +17,10 @@ func MysticAura(doc *generator.Document) error {
 			"fillHeader": []interface{}{true, 200, 200, 200},
 			"fillRow":    []interface{}{true, 255, 255, 255},
 			"border":     []string{"1", "1"},
-			"note":       true,
-			"payment":    false,
+			"note":       false,
+			"payment":    true,
 			"calculations": map[string]map[string][]string{
 				"Subtotal": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"1", "1"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-				"TOTAL": {
 					"alignment": []string{"CM", "CM"},
 					"margin":    []string{"1", "1"},
 					"style":     []string{"B", "B"},
@@ -59,6 +53,31 @@ func MysticAura(doc *generator.Document) error {
 			"width":      40.0,
 			"alignment":  []string{"CM", "CM"},
 		},
+	}
+
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", "B"},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", "B"},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"CM", "CM"},
+		"margin":    {"1", "1"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "255,255,255"},
 	}
 
 	doc.Pdf = fpdf.New("P", "mm", "A4", "") // 210 x 297 (mm)

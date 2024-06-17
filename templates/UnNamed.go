@@ -121,18 +121,6 @@ func UnNamed(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Discount": {
-					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"B", "B"},
-					"style":     []string{"B", ""},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-				"TOTAL": {
-					"alignment": []string{"RM", "RM"},
-					"margin":    []string{"B", "B"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
 			},
 			"note":    false,
 			"payment": true,
@@ -162,6 +150,31 @@ func UnNamed(doc *generator.Document) error {
 			"width":      40.0,
 			"alignment":  []string{"CM", "RM"},
 		},
+	}
+
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"RM", "RM"},
+			"margin":    {"B", "B"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"RM", "RM"},
+			"margin":    {"B", "B"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"RM", "RM"},
+		"margin":    {"B", "B"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "255,255,255"},
 	}
 
 	doc.SetTableHeadings(descriptionData)

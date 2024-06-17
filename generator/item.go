@@ -50,12 +50,12 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 	}
 
 	doc.Pdf.SetFont("Arial", "", 12)
-	subtotal := 0.0
+	// subtotal := 0.0
 	doc.Pdf.SetX(MarginX)
 
 	for idx, item := range doc.Items {
 		totalPrice := item.UnitPrice * float64(item.Quantity)
-		subtotal += totalPrice
+		// subtotal += totalPrice
 
 		if len(columnsDescriptions) > 5 {
 			doc.Pdf.CellFormat(columnsDescriptions[1]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%d", idx+1), border[1], 0, columnsDescriptions[1]["alignment"].([]string)[1], true, 0, "")
@@ -103,8 +103,6 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 		}
 	}
 
-	doc.Pdf.SetFontStyle("B")
-	doc.Pdf.SetFontSize(12)
 	leftIndent := 0.0
 	if len(columnsDescriptions) > 5 {
 		leftIndent += columnsDescriptions[1]["width"].(float64) + columnsDescriptions[2]["width"].(float64) + columnsDescriptions[3]["width"].(float64)
@@ -112,7 +110,11 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 		leftIndent += columnsDescriptions[1]["width"].(float64) + columnsDescriptions[2]["width"].(float64)
 	}
 
-	grandTotal := 0.0
+	doc.Pdf.SetFontStyle("B")
+	doc.Pdf.SetFontSize(12)
+	subtotal := doc.calculateSubtotal()
+	tax := 0.0
+	discount := 0.0
 	for key := range calculations {
 		alignment := calculations[key]["alignment"]
 		margin := calculations[key]["margin"]
@@ -159,17 +161,18 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 				doc.Pdf.CellFormat(columnsDescriptions[4]["width"].(float64), TableCellLineHeight, fmt.Sprintf("%.2f", subtotal), margin[1], 0, alignment[1], true, 0, "")
 			}
 			doc.Pdf.Ln(-1)
-			grandTotal = subtotal
+			// grandTotal = subtotal
 			continue
 		}
 
 		// It can either be tax or discount. Now here we change the value of the grandTotal if either is correct
 		if strings.ToLower(key) == "tax" {
-			tax := 0.0
-			if doc.DocumentData.Tax != 0.0 {
-				tax = subtotal * (doc.DocumentData.Tax / 100)
-				grandTotal = subtotal + tax
-			}
+			tax = doc.calculateTax()
+			// tax := 0.0
+			// if doc.DocumentData.Tax != 0.0 {
+			// 	tax = subtotal * (doc.DocumentData.Tax / 100)
+			// 	grandTotal = subtotal + tax
+			// }
 
 			doc.Pdf.SetX(MarginX + leftIndent)
 			if len(columnsDescriptions) > 5 {
@@ -210,12 +213,19 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 			doc.Pdf.Ln(-1)
 			continue
 
-		} else if strings.ToLower(key) == "discount" {
-			discount := 0.0
-			if doc.DocumentData.Discount != 0.0 {
-				discount = subtotal * (doc.DocumentData.Discount / 100)
-				grandTotal = subtotal - discount
+		}
+
+		if strings.ToLower(key) == "discount" {
+			if tax != 0.0 {
+				discount = doc.calculateDiscountWithTax()
+			} else {
+				discount = doc.calculateDiscount()
 			}
+			// discount := 0.0
+			// if doc.DocumentData.Discount != 0.0 {
+			// 	discount = subtotal * (doc.DocumentData.Discount / 100)
+			// 	grandTotal = subtotal - discount
+			// }
 
 			doc.Pdf.SetX(MarginX + leftIndent)
 			if len(columnsDescriptions) > 5 {
@@ -258,6 +268,8 @@ func (doc *Document) AddItemToTable(columnsDescriptions map[int]map[string]inter
 		}
 
 		if strings.ToLower(key) == "total" {
+
+			grandTotal := (subtotal + tax) - discount
 			doc.Pdf.SetX(MarginX + leftIndent)
 			if len(columnsDescriptions) > 5 {
 				doc.Pdf.SetFontStyle(style[0])

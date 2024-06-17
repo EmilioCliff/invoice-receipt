@@ -78,15 +78,17 @@ func AzureEclipse(doc *generator.Document) error {
 	wd = doc.Pdf.GetStringWidth(" Ksh TOTAL PAID")
 
 	// If tax is added find a way to calculate this
-	subtotal := 0.0
-	for _, item := range doc.Items {
-		totalPrice := item.UnitPrice * float64(item.Quantity)
-		subtotal += totalPrice
-	}
+	// subtotal := 0.0
+	// for _, item := range doc.Items {
+	// 	totalPrice := item.UnitPrice * float64(item.Quantity)
+	// 	subtotal += totalPrice
+	// }
+	totalPaidX, totalPaidY := doc.Pdf.GetXY()
 
-	doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
-	doc.Pdf.SetXY(-(generator.MarginX + wd), totalY)
-	doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("%s %.2f", doc.Options.CurrencySymbol, subtotal), "0", 0, "RM", false, 0, "")
+	// doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
+	// doc.Pdf.SetXY(-(generator.MarginX + wd), totalY)
+	// grandTotal := doc.CalculateTotalWithDiscount()
+	// doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("%s %.2f", doc.Options.CurrencySymbol, grandTotal), "0", 0, "RM", false, 0, "")
 	doc.Pdf.Ln(8)
 
 	// TODO: ADD A Line
@@ -117,18 +119,6 @@ func AzureEclipse(doc *generator.Document) error {
 					"style":     []string{"B", ""},
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
-				"Discount": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"1", "1"},
-					"style":     []string{"B", ""},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-				"TOTAL": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"1", "1"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "80,80,80"},
-				},
 			},
 		},
 		1: {
@@ -153,6 +143,49 @@ func AzureEclipse(doc *generator.Document) error {
 		},
 	}
 
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"CM", "CM"},
+		"margin":    {"1", "1"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "80,80,80"},
+	}
+
+	grandTotal := 0.0
+	if doc.DocumentData.Discount != 0 && doc.DocumentData.Tax != 0 {
+		grandTotal = doc.CalculateTotalWithTaxAndDiscount()
+	} else if doc.DocumentData.Discount != 0 {
+		grandTotal = doc.CalculateTotalWithDiscount()
+	} else if doc.DocumentData.Tax != 0 {
+		grandTotal = doc.CalculateTotalWithTax()
+	} else {
+		grandTotal = doc.CalculateTotalWithoutTaxAndDiscount()
+	}
+
+	tableX, tableY := doc.Pdf.GetXY()
+	doc.Pdf.SetXY(totalPaidX, totalPaidY)
+	doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
+	doc.Pdf.SetXY(-(generator.MarginX + wd), totalY)
+	doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("%s %.2f", doc.Options.CurrencySymbol, grandTotal), "0", 0, "RM", false, 0, "")
+
+	doc.Pdf.SetXY(tableX, tableY)
 	doc.SetTableHeadings(descriptionData)
 	err := doc.AddItemToTable(descriptionData)
 	if err != nil {

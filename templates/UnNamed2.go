@@ -98,24 +98,121 @@ func UnNamed2(doc *generator.Document) error {
 	doc.Pdf.SetFontStyle("")
 	doc.Pdf.CellFormat(50, generator.CellLineHeight, "03/05/2023", "0", 0, "RM", false, 0, "") // Add Due Date Day
 
-	subtotal := 0.0
-	for _, item := range doc.Items {
-		totalPrice := item.UnitPrice * float64(item.Quantity)
-		subtotal += totalPrice
-	}
-
 	doc.Pdf.Ln(20)
 	y = doc.Pdf.GetY()
 	doc.Pdf.Line(generator.MarginX, y, 210-generator.MarginX, y)
 	doc.Pdf.Ln(10)
 	doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
 	doc.Pdf.Cell(50, generator.CellLineHeight, fmt.Sprintf("%s Total", doc.Type))
-	wd := doc.Pdf.GetStringWidth(fmt.Sprintf("%s%v", doc.Options.CurrencySymbol, subtotal))
-	doc.Pdf.SetX(-(generator.MarginX + wd))
-	doc.Pdf.Cell(wd, generator.CellLineHeight, fmt.Sprintf("%s%v", doc.Options.CurrencySymbol, subtotal))
+
+	totalX, totalY := doc.Pdf.GetXY()
+
 	doc.Pdf.Ln(15)
 	y = doc.Pdf.GetY()
 	doc.Pdf.Line(generator.MarginX, y, 210-generator.MarginX, y)
+
+	descriptionData := map[int]map[string]interface{}{
+		0: {
+			"fillHeader": []interface{}{true, 200, 200, 200},
+			"fillRow":    []interface{}{true, 255, 255, 255},
+			"border":     []string{"0", "TB"},
+			"note":       false,
+			"payment":    true,
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"TB", "TB"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+			},
+		},
+		1: {
+			"columnName": doc.Options.TextItemsNumberTitle,
+			"width":      10.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		2: {
+			"columnName": doc.Options.TextItemsNameDescriptionTitle,
+			"width":      75.0,
+			"alignment":  []string{"CM", "LM"},
+		},
+		3: {
+			"columnName": doc.Options.TextItemsQuantityTitle,
+			"width":      25.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		4: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsUnitCostTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		5: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsTotalTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+	}
+
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"TB", "TB"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"TB", "TB"},
+			"style":     {"B", ""},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"CM", "CM"},
+		"margin":    {"TB", "TB"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "255,255,255"},
+	}
+
+	grandTotal := 0.0
+	if doc.DocumentData.Discount != 0 && doc.DocumentData.Tax != 0 {
+		grandTotal = doc.CalculateTotalWithTaxAndDiscount()
+	} else if doc.DocumentData.Discount != 0 {
+		grandTotal = doc.CalculateTotalWithDiscount()
+	} else if doc.DocumentData.Tax != 0 {
+		grandTotal = doc.CalculateTotalWithTax()
+	} else {
+		grandTotal = doc.CalculateTotalWithoutTaxAndDiscount()
+	}
+
+	tableX, tableY := doc.Pdf.GetXY()
+	doc.Pdf.SetXY(totalX, totalY)
+	wd := doc.Pdf.GetStringWidth(fmt.Sprintf("%s%v", doc.Options.CurrencySymbol, grandTotal))
+	doc.Pdf.SetX(-(generator.MarginX + wd))
+	doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("%s%.2f", doc.Options.CurrencySymbol, grandTotal), "0", 0, "RC", false, 0, "")
+
+	doc.Pdf.SetXY(tableX, tableY)
+	y = doc.Pdf.GetY()
+	doc.Pdf.SetXY(generator.MarginX, y+20)
+	doc.SetTableHeadings(descriptionData)
+	doc.AddItemToTable(descriptionData)
+
+	doc.Pdf.SetXY(generator.MarginX, -50.0)
+	doc.Pdf.SetFont("Arial", "B", generator.NormalTextFontSize)
+	doc.Pdf.Cell(50, generator.CellLineHeight, "Terms & Conditions")
+	doc.Pdf.Ln(5)
+	doc.Pdf.SetFontStyle("")
+	doc.Pdf.Cell(50, generator.CellLineHeight, doc.DocumentData.TermNConditions)
+	doc.Pdf.Ln(10)
+	if doc.DocumentData.Note != "" {
+		doc.Pdf.SetFontSize(generator.SmallTextFontSize)
+		doc.Pdf.MultiCell(80, 4, doc.DocumentData.Note, "0", "LT", false)
+	}
 
 	return nil
 }
