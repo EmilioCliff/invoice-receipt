@@ -1,10 +1,5 @@
 package generator
 
-func (doc *Document) SetHeaders(text string) {
-	doc.Header = text
-	return
-}
-
 func (doc *Document) SetFooter(text string) {
 	doc.Footer = text
 	return

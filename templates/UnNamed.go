@@ -27,6 +27,8 @@ func UnNamed(doc *generator.Document) error {
 	doc.Pdf.SetFontLocation(filepath.Join(currentDir, "fonts"))
 	doc.Pdf.AddFont("Pacifico", "", "Pacifico-Regular.json")
 
+	doc.SetPageFooter()
+
 	doc.Pdf.AddPage()
 
 	targetWidth, targetHeight, err := generator.ResizeImage(doc.CompanyContact.CompanyLogo)

@@ -21,6 +21,7 @@ func (doc *Document) Build() ([]byte, error) {
 	}
 	err = template(doc)
 	if err != nil {
+		// fmt.Errorf()
 		return nil, err
 	}
 

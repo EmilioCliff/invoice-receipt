@@ -153,3 +153,17 @@ func (d *DocumentData) LayerDocumentData(docType string, doc *Document, formats 
 	doc.Pdf.SetFontStyle("")
 	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format(formart["date_format"])))
 }
+
+func (doc *Document) SetPageFooter() {
+	if doc.Footer != "" {
+		doc.Pdf.SetFooterFunc(func() {
+			doc.Pdf.SetY(-MarginY)
+			doc.Pdf.SetFont("Arial", "I", ExtraSmallTextFontSize)
+			wd := doc.Pdf.GetStringWidth(doc.Footer)
+			doc.Pdf.Cell(wd, CellLineHeight, doc.Footer)
+			doc.Pdf.SetX(-MarginX)
+			doc.Pdf.CellFormat(0, 10, fmt.Sprintf("Page %d", doc.Pdf.PageNo()),
+				"", 0, "C", false, 0, "")
+		})
+	}
+}

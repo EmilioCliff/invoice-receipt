@@ -12,89 +12,11 @@ import (
 )
 
 func MysticAura(doc *generator.Document) error {
-	descriptionData := map[int]map[string]interface{}{
-		0: {
-			"fillHeader": []interface{}{true, 200, 200, 200},
-			"fillRow":    []interface{}{true, 255, 255, 255},
-			"border":     []string{"1", "1"},
-			"note":       false,
-			"payment":    true,
-			"calculations": map[string]map[string][]string{
-				"Subtotal": {
-					"alignment": []string{"CM", "CM"},
-					"margin":    []string{"1", "1"},
-					"style":     []string{"B", "B"},
-					"fill":      []string{"255,255,255", "255,255,255"},
-				},
-			},
-		},
-		1: {
-			"columnName": doc.Options.TextItemsNumberTitle,
-			"width":      10.0,
-			"alignment":  []string{"CM", "CM"},
-		},
-		2: {
-			"columnName": doc.Options.TextItemsNameDescriptionTitle,
-			"width":      75.0,
-			"alignment":  []string{"CM", "LM"},
-		},
-		3: {
-			"columnName": doc.Options.TextItemsQuantityTitle,
-			"width":      25.0,
-			"alignment":  []string{"CM", "CM"},
-		},
-		4: {
-			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsUnitCostTitle, doc.Options.CurrencySymbol),
-			"width":      40.0,
-			"alignment":  []string{"CM", "CM"},
-		},
-		5: {
-			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsTotalTitle, doc.Options.CurrencySymbol),
-			"width":      40.0,
-			"alignment":  []string{"CM", "CM"},
-		},
-	}
-
-	if doc.DocumentData.Tax != 0 {
-		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
-			"alignment": {"CM", "CM"},
-			"margin":    {"1", "1"},
-			"style":     {"B", "B"},
-			"fill":      {"255,255,255", "255,255,255"},
-		}
-	}
-
-	if doc.DocumentData.Discount != 0 {
-		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
-			"alignment": {"CM", "CM"},
-			"margin":    {"1", "1"},
-			"style":     {"B", "B"},
-			"fill":      {"255,255,255", "255,255,255"},
-		}
-	}
-
-	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
-		"alignment": {"CM", "CM"},
-		"margin":    {"1", "1"},
-		"style":     {"B", "B"},
-		"fill":      {"255,255,255", "255,255,255"},
-	}
-
 	doc.Pdf = fpdf.New("P", "mm", "A4", "") // 210 x 297 (mm)
 	doc.Pdf.SetMargins(generator.MarginX, generator.MarginY, generator.MarginX)
 
 	docType := strings.ToUpper(doc.Type)
-	if doc.Footer != "" {
-		doc.Pdf.SetFooterFunc(func() {
-			doc.Pdf.SetY(-generator.MarginY)
-			doc.Pdf.SetFont("Arial", "I", generator.ExtraSmallTextFontSize)
-			wd := doc.Pdf.GetStringWidth(doc.Footer)
-			doc.Pdf.Cell(wd, generator.CellLineHeight, doc.Footer)
-			doc.Pdf.SetX(-generator.MarginX)
-			doc.Pdf.CellFormat(0, 10, fmt.Sprintf("Page %d", doc.Pdf.PageNo()),
-				"", 0, "C", false, 0, "")
-		})
-	}
+	doc.SetPageFooter()
 
 	doc.Pdf.SetAutoPageBreak(true, 20)
 
@@ -185,6 +107,74 @@ func MysticAura(doc *generator.Document) error {
 	doc.Pdf.Cell(42, lineHeight, fmt.Sprintf("%v DATE: ", docType))
 	doc.Pdf.SetFontStyle("")
 	doc.Pdf.Cell(40, lineHeight, fmt.Sprintf("%s", time.Now().Format("2006-01-02")))
+
+	descriptionData := map[int]map[string]interface{}{
+		0: {
+			"fillHeader": []interface{}{true, 200, 200, 200},
+			"fillRow":    []interface{}{true, 255, 255, 255},
+			"border":     []string{"1", "1"},
+			"note":       false,
+			"payment":    true,
+			"calculations": map[string]map[string][]string{
+				"Subtotal": {
+					"alignment": []string{"CM", "CM"},
+					"margin":    []string{"1", "1"},
+					"style":     []string{"B", "B"},
+					"fill":      []string{"255,255,255", "255,255,255"},
+				},
+			},
+		},
+		1: {
+			"columnName": doc.Options.TextItemsNumberTitle,
+			"width":      10.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		2: {
+			"columnName": doc.Options.TextItemsNameDescriptionTitle,
+			"width":      75.0,
+			"alignment":  []string{"CM", "LM"},
+		},
+		3: {
+			"columnName": doc.Options.TextItemsQuantityTitle,
+			"width":      25.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		4: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsUnitCostTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+		5: {
+			"columnName": fmt.Sprintf("%s (%s)", doc.Options.TextItemsTotalTitle, doc.Options.CurrencySymbol),
+			"width":      40.0,
+			"alignment":  []string{"CM", "CM"},
+		},
+	}
+
+	if doc.DocumentData.Tax != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Tax"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", "B"},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	if doc.DocumentData.Discount != 0 {
+		descriptionData[0]["calculations"].(map[string]map[string][]string)["Discount"] = map[string][]string{
+			"alignment": {"CM", "CM"},
+			"margin":    {"1", "1"},
+			"style":     {"B", "B"},
+			"fill":      {"255,255,255", "255,255,255"},
+		}
+	}
+
+	descriptionData[0]["calculations"].(map[string]map[string][]string)["TOTAL"] = map[string][]string{
+		"alignment": {"CM", "CM"},
+		"margin":    {"1", "1"},
+		"style":     {"B", "B"},
+		"fill":      {"255,255,255", "255,255,255"},
+	}
 
 	doc.Pdf.SetXY(generator.MarginX, tableY+10)
 	doc.SetTableHeadings(descriptionData)

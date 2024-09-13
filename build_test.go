@@ -11,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	doc, err := New("UnNamed2", &generator.Options{
+	doc, err := New("CelestialDream", &generator.Options{
 		DocumentType:   generator.Receipt,
 		CurrencySymbol: "KES",
 	})
@@ -20,7 +20,6 @@ func TestNew(t *testing.T) {
 	}
 	require.NoError(t, err)
 
-	doc.SetHeaders("My header")
 	doc.SetFooter("Your satisfaction is our best feeling")
 	doc.SetDocumentData(&generator.DocumentData{
 		DocumentNumber:   "20324334532342232",
@@ -40,7 +39,7 @@ func TestNew(t *testing.T) {
 		CompanyName:        "My Company Name",
 		CompanyEmail:       "company@gmail.com",
 		CompanyPhoneNumber: "07070707070",
-		CompanyLogo:        filepath.Join(currentDir, "logo.png"),
+		CompanyLogo:        filepath.Join(currentDir, "./logo.png"),
 		CompanyAddress: &generator.Address{
 			PostalCode:    "00200",
 			City:          "Nairobi",
@@ -62,11 +61,11 @@ func TestNew(t *testing.T) {
 	})
 
 	doc.SetPaymentDetails(&generator.PaymentDetails{
-		Bank: &generator.BankDetails{
-			BankName:      "KCB",
-			AccountName:   "Emilio Cliff Bank Of Kenya",
-			AccountNumber: "324235364565675",
-		},
+		// Bank: &generator.BankDetails{
+		// 	BankName:      "KCB",
+		// 	AccountName:   "Emilio Cliff Bank Of Kenya",
+		// 	AccountNumber: "324235364565675",
+		// },
 		Paybill: &generator.PaybillDetails{
 			PaybillNumber: "3435346545645",
 			AccountNumber: "32434534645",

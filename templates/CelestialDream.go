@@ -20,6 +20,8 @@ func CelestialDream(doc *generator.Document) error {
 
 	doc.Pdf.SetAutoPageBreak(true, 20)
 
+	doc.SetPageFooter()
+
 	doc.Pdf.AddPage()
 
 	targetWidth, targetHeight, err := generator.ResizeImage(doc.CompanyContact.CompanyLogo)

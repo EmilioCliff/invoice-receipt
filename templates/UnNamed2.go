@@ -17,14 +17,6 @@ func UnNamed2(doc *generator.Document) error {
 
 	doc.Pdf.SetAutoPageBreak(true, 10)
 
-	// currentDir, err := os.Getwd()
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to get current dir: %w", err)
-	// }
-
-	// doc.Pdf.SetFontLocation(filepath.Join(currentDir, "fonts"))
-	// doc.Pdf.AddFont("Pacifico", "", "Pacifico-Regular.json")
-
 	doc.Pdf.SetHeaderFunc(func() {
 		doc.Pdf.SetFillColor(200, 200, 200)
 		doc.Pdf.Rect(generator.MarginX, generator.MarginY, 190, 10, "F")

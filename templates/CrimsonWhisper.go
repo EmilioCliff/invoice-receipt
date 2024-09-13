@@ -30,6 +30,8 @@ func CrimsonWhisper(doc *generator.Document) error {
 	doc.Pdf.SetFontLocation(filepath.Join(currentDir, "fonts"))
 	doc.Pdf.AddFont("Pacifico", "", "Pacifico-Regular.json")
 
+	doc.SetPageFooter()
+
 	doc.Pdf.AddPage()
 
 	doc.Pdf.SetHomeXY()
@@ -118,8 +120,8 @@ func CrimsonWhisper(doc *generator.Document) error {
 					"fill":      []string{"255,255,255", "255,255,255"},
 				},
 			},
-			"note":    true,
-			"payment": false,
+			"note":    false,
+			"payment": true,
 		},
 		1: {
 			"columnName": doc.Options.TextItemsNumberTitle,

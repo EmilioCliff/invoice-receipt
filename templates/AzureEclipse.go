@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"github/EmilioCliff/invoice-receipt/generator"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -19,6 +21,16 @@ func AzureEclipse(doc *generator.Document) error {
 	docType := strings.ToUpper(doc.Type)
 
 	doc.Pdf.SetAutoPageBreak(true, 20)
+
+	doc.SetPageFooter()
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("Failed to get current dir: %w", err)
+	}
+
+	doc.Pdf.SetFontLocation(filepath.Join(currentDir, "fonts"))
+	doc.Pdf.AddFont("Pacifico", "", "Pacifico-Regular.json")
 
 	doc.Pdf.AddPage()
 
@@ -77,21 +89,10 @@ func AzureEclipse(doc *generator.Document) error {
 	doc.Pdf.SetFontSize(generator.LargeTextFontSize)
 	wd = doc.Pdf.GetStringWidth(" Ksh TOTAL PAID")
 
-	// If tax is added find a way to calculate this
-	// subtotal := 0.0
-	// for _, item := range doc.Items {
-	// 	totalPrice := item.UnitPrice * float64(item.Quantity)
-	// 	subtotal += totalPrice
-	// }
 	totalPaidX, totalPaidY := doc.Pdf.GetXY()
 
-	// doc.Pdf.SetFont("Arial", "B", generator.LargeTextFontSize)
-	// doc.Pdf.SetXY(-(generator.MarginX + wd), totalY)
-	// grandTotal := doc.CalculateTotalWithDiscount()
-	// doc.Pdf.CellFormat(wd, generator.CellLineHeight, fmt.Sprintf("%s %.2f", doc.Options.CurrencySymbol, grandTotal), "0", 0, "RM", false, 0, "")
 	doc.Pdf.Ln(8)
 
-	// TODO: ADD A Line
 	lineY = doc.Pdf.GetY()
 	doc.Pdf.Line(190, lineY+5, 200, lineY+5)
 	doc.Pdf.Ln(5)
@@ -187,7 +188,7 @@ func AzureEclipse(doc *generator.Document) error {
 
 	doc.Pdf.SetXY(tableX, tableY)
 	doc.SetTableHeadings(descriptionData)
-	err := doc.AddItemToTable(descriptionData)
+	err = doc.AddItemToTable(descriptionData)
 	if err != nil {
 		return err
 	}
@@ -200,6 +201,7 @@ func AzureEclipse(doc *generator.Document) error {
 
 	doc.Pdf.SetFontSize(generator.NormalTextFontSize)
 	doc.Pdf.SetX(130)
+	doc.Pdf.SetFont("Pacifico", "", generator.LargeTextFontSize)
 	doc.Pdf.CellFormat(70, generator.CellLineHeight, doc.DocumentData.IssuedBy, "0", 0, "CM", false, 0, "")
 	doc.Pdf.Ln(10)
 	y = doc.Pdf.GetY()
